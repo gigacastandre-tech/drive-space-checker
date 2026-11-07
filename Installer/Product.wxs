@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package
+      Name="Drive Space Checker"
+      Manufacturer="Drive Space Checker"
+      Version="$(var.ProductVersion)"
+      UpgradeCode="F1A15699-E7C9-4A38-8653-9E456D890299"
+      Scope="perMachine"
+      InstallerVersion="500"
+      Language="1033">
+
+    <SummaryInformation
+        Description="Drive Space Checker - drive space monitoring with email alerts and a disk usage explorer."
+        Manufacturer="Drive Space Checker" />
+
+    <MajorUpgrade
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of Drive Space Checker is already installed." />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <util:CloseApplication
+        Id="CloseRunningInstance"
+        Target="DriveSpaceChecker.exe"
+        CloseMessage="yes"
+        RebootPrompt="no"
+        PromptToContinue="no"
+        TerminateProcess="1"
+        Timeout="5" />
+
+    <Feature Id="MainFeature" Title="Drive Space Checker" Level="1">
+      <ComponentGroupRef Id="ApplicationFiles" />
+    </Feature>
+
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Drive Space Checker" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppStartMenuFolder" Name="Drive Space Checker" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ApplicationFiles">
+      <Component Id="ApplicationExecutable" Directory="INSTALLFOLDER" Guid="*">
+        <File Id="DriveSpaceCheckerExe"
+              Source="$(var.PublishDir)\DriveSpaceChecker.exe"
+              KeyPath="yes">
+          <Shortcut Id="AppStartMenuShortcut"
+                    Directory="AppStartMenuFolder"
+                    Name="Drive Space Checker"
+                    Description="Monitor drive space and find what is using disk space"
+                    Icon="AppIcon"
+                    WorkingDirectory="INSTALLFOLDER" />
+        </File>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

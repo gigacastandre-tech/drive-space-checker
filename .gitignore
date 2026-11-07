@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Oo]bj/
+[Bb]in/
+
+# Installer output (published as a GitHub Release asset instead)
+artifacts/
+*.msi
+*.wixpdb
+*.wixobj
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Test / coverage
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+coverage*.xml
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Local overrides
+launchSettings.json
+*.local.json

@@ -1,0 +1,657 @@
+<Window x:Class="DriveSpaceChecker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:DriveSpaceChecker.Controls"
+        Title="Drive Space Checker"
+        Icon="Assets/app.ico"
+        Width="1240" Height="830" MinWidth="1060" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource AppBgBrush}"
+        FontFamily="Segoe UI"
+        UseLayoutRounding="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1" Padding="22,12">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Image Source="Assets/app.ico" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Drive Space Checker" Style="{StaticResource H1}" />
+                        <TextBlock Text="Monitor drive space · email alerts · find what is using your disk"
+                                   Style="{StaticResource Muted}" Margin="0,1,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border x:Name="MonitoringBadge" Background="{StaticResource OkSoftBrush}" CornerRadius="14"
+                            Padding="12,5" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="MonitoringDot" Width="8" Height="8" Fill="{StaticResource OkBrush}"
+                                     VerticalAlignment="Center" />
+                            <TextBlock x:Name="HeaderStatusText" Text="Monitoring active" Margin="6,0,0,0"
+                                       Foreground="#166534" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Check now" Style="{StaticResource SecondaryButton}" Click="CheckNow_Click" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="1" x:Name="MainTabs" Margin="22,10,22,0">
+            <!-- ============================ DRIVES ============================ -->
+            <TabItem Header="Drives">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,14,0,0">
+                    <StackPanel Margin="0,0,0,18">
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource SummaryCard}">
+                                <StackPanel>
+                                    <TextBlock Text="TOTAL CAPACITY" Style="{StaticResource StatLabel}" />
+                                    <TextBlock x:Name="TotalCapacityText" Text="–" Style="{StaticResource StatValue}" Margin="0,3,0,0" />
+                                    <TextBlock x:Name="DriveCountText" Text="" Style="{StaticResource Muted}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource SummaryCard}">
+                                <StackPanel>
+                                    <TextBlock Text="USED SPACE" Style="{StaticResource StatLabel}" />
+                                    <TextBlock x:Name="TotalUsedText" Text="–" Style="{StaticResource StatValue}" Margin="0,3,0,0" />
+                                    <TextBlock x:Name="UsedPercentText" Text="" Style="{StaticResource Muted}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource SummaryCard}">
+                                <StackPanel>
+                                    <TextBlock Text="FREE SPACE" Style="{StaticResource StatLabel}" />
+                                    <TextBlock x:Name="TotalFreeText" Text="–" Style="{StaticResource StatValue}" Margin="0,3,0,0" />
+                                    <TextBlock x:Name="FreePercentText" Text="" Style="{StaticResource Muted}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="3" Style="{StaticResource Card}" Padding="16,12" VerticalAlignment="Stretch">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Last check" Style="{StaticResource StatLabel}" />
+                                    <TextBlock x:Name="LastCheckText" Text="–" FontSize="13" FontWeight="SemiBold" Margin="0,3,0,0" />
+                                    <TextBlock x:Name="NextCheckText" Text="" Style="{StaticResource Muted}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <DockPanel Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                <TextBlock Text="Your drives" Style="{StaticResource H2}" />
+                                <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="10" Padding="8,2" Margin="8,0,0,0">
+                                    <TextBlock Text="Fixed disks" FontSize="11" Foreground="#1D4ED8" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock x:Name="DrivesHintText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Style="{StaticResource Muted}"
+                                       Text="Free space is checked automatically in the background." />
+                        </DockPanel>
+
+                        <ItemsControl x:Name="DriveItems">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Card}" Width="356" Margin="0,0,14,14" Padding="16">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="46" Height="46" CornerRadius="10" Background="{Binding BadgeBackground}">
+                                                    <TextBlock Text="{Binding Letter}" FontSize="16" FontWeight="Bold"
+                                                               Foreground="{Binding BadgeForeground}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Subtitle}" FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <Border Grid.Column="2" CornerRadius="10" Background="{Binding StatusBackground}"
+                                                        Padding="8,3" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="SemiBold"
+                                                               Foreground="{Binding StatusForeground}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid Margin="0,16,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="FREE" Style="{StaticResource StatLabel}" />
+                                                    <TextBlock Text="{Binding FreeText}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="USED" Style="{StaticResource StatLabel}" />
+                                                    <TextBlock Text="{Binding UsedText}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="TOTAL" Style="{StaticResource StatLabel}" />
+                                                    <TextBlock Text="{Binding TotalText}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <ProgressBar Value="{Binding UsedPercent}" Maximum="100" Height="8" Margin="0,12,0,0"
+                                                         Foreground="{Binding BarBrush}" Style="{StaticResource ThinProgress}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <TextBlock Text="{Binding PercentText}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                                <TextBlock Text="{Binding FreeGbText}" FontSize="11" HorizontalAlignment="Right"
+                                                           Foreground="{StaticResource MutedBrush}" />
+                                            </Grid>
+
+                                            <Border Background="#F8FAFC" CornerRadius="6" Padding="10,7" Margin="0,12,0,0">
+                                                <TextBlock Text="{Binding RuleText}" FontSize="11"
+                                                           Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                                            </Border>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                <Button Content="Scan this drive" Style="{StaticResource SecondaryButton}"
+                                                        Padding="12,6" Click="ScanDrive_Click" />
+                                                <Button Content="Open in Explorer" Style="{StaticResource LinkButton}"
+                                                        Margin="10,0,0,0" Click="OpenDrive_Click" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Style="{StaticResource Card}" Margin="0,2,0,0" Padding="14">
+                            <DockPanel>
+                                <TextBlock Text="ⓘ" FontSize="16" Foreground="{StaticResource AccentBrush}"
+                                           Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <Button Content="Configure alerts" Style="{StaticResource LinkButton}" DockPanel.Dock="Right"
+                                        Click="GoToAlerts_Click" />
+                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}"
+                                           VerticalAlignment="Center"
+                                           Text="Set a free-space threshold per drive and Drive Space Checker will email you when a drive gets low. Use the Disk Usage tab to see exactly which folders are using the space." />
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============================ ALERTS & EMAIL ============================ -->
+            <TabItem Header="Alerts &amp; Email">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,14,0,0">
+                    <Grid Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left column -->
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Monitoring" Style="{StaticResource H2}" />
+                                    <TextBlock Text="How often drives are checked and when alerts may repeat."
+                                               Style="{StaticResource Muted}" Margin="0,2,0,12" />
+
+                                    <CheckBox x:Name="AlertEnabledCheck" Content="Enable automatic drive monitoring and email alerts" />
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,10,0">
+                                            <TextBlock Text="CHECK EVERY (MINUTES)" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="IntervalBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="ALERT COOLDOWN (HOURS)" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="CooldownBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <CheckBox x:Name="NotifyCheck" Content="Show a Windows notification when a drive is low" Margin="0,12,0,0" />
+                                    <CheckBox x:Name="MinimizeToTrayCheck" Content="Close button minimizes to the notification area" Margin="0,8,0,0" />
+                                    <CheckBox x:Name="StartWithWindowsCheck" Content="Start automatically when I sign in to Windows" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Default thresholds" Style="{StaticResource H2}" />
+                                    <TextBlock Text="Used for every drive unless a drive has its own rule below. Leave a value at 0 to ignore it."
+                                               Style="{StaticResource Muted}" Margin="0,2,0,12" TextWrapping="Wrap" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,10,0">
+                                            <TextBlock Text="ALERT WHEN FREE SPACE ≤ (%)" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="DefaultPercentBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="ALERT WHEN FREE SPACE ≤ (GB)" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="DefaultGbBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="6" Padding="10,8" Margin="0,12,0,0">
+                                        <TextBlock FontSize="11" Foreground="#1E40AF" TextWrapping="Wrap"
+                                                   Text="Example: 10% means an email is sent when a drive has 10% or less free. The alert repeats after the cooldown, and resets once the drive has recovered by 2%." />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Per-drive rules" Style="{StaticResource H2}" DockPanel.Dock="Left" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Content="Add rule" Style="{StaticResource SecondaryButton}" Padding="10,4"
+                                                    Click="AddRule_Click" />
+                                            <Button Content="Remove" Style="{StaticResource LinkButton}" Margin="8,0,0,0"
+                                                    Click="RemoveRule_Click" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <TextBlock Text="Override the defaults for a specific drive. Double-click a cell to edit it."
+                                               Style="{StaticResource Muted}" Margin="0,2,0,10" TextWrapping="Wrap" />
+                                    <DataGrid x:Name="OverridesGrid" Height="150" IsReadOnly="False" RowHeight="32"
+                                              AlternatingRowBackground="Transparent">
+                                        <DataGrid.Columns>
+                                            <DataGridComboBoxColumn x:Name="OverrideDriveColumn" Header="Drive" Width="80"
+                                                                    SelectedItemBinding="{Binding DriveLetter, UpdateSourceTrigger=PropertyChanged}" />
+                                            <DataGridCheckBoxColumn Header="On" Width="46"
+                                                                    Binding="{Binding Enabled, UpdateSourceTrigger=PropertyChanged}" />
+                                            <DataGridTextColumn Header="Free ≤ %" Width="90"
+                                                                Binding="{Binding ThresholdPercent, UpdateSourceTrigger=LostFocus}" />
+                                            <DataGridTextColumn Header="Free ≤ GB" Width="105"
+                                                                Binding="{Binding ThresholdGb, UpdateSourceTrigger=LostFocus}" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Daily usage report" Style="{StaticResource H2}" />
+                                    <TextBlock Text="Optionally email a full usage summary once a day, even when nothing is low."
+                                               Style="{StaticResource Muted}" Margin="0,2,0,10" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox x:Name="DailyReportCheck" Content="Send a daily report at" VerticalAlignment="Center" />
+                                        <ComboBox x:Name="DailyHourCombo" Width="90" Margin="10,0,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Right column -->
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Email delivery" Style="{StaticResource H2}" DockPanel.Dock="Left" />
+                                        <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="10" Padding="8,2"
+                                                HorizontalAlignment="Right">
+                                            <TextBlock Text="SMTP" FontSize="11" Foreground="#1D4ED8" FontWeight="SemiBold" />
+                                        </Border>
+                                    </DockPanel>
+                                    <TextBlock Text="Works with Gmail, Outlook/Microsoft 365, Yahoo or any SMTP server. For Gmail and Outlook, create an app password and use that instead of your normal password."
+                                               Style="{StaticResource Muted}" Margin="0,2,0,12" TextWrapping="Wrap" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="86" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,10,0">
+                                            <TextBlock Text="SMTP SERVER" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="HostBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="PORT" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="PortBox" Style="{StaticResource ModernTextBox}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="SECURITY" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox x:Name="SecurityCombo" DisplayMemberPath="Label" SelectedValuePath="Value" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="USERNAME (OPTIONAL)" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="UserBox" Style="{StaticResource ModernTextBox}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="PASSWORD / APP PASSWORD" Style="{StaticResource FieldLabel}" />
+                                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource ModernPasswordBox}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="FROM NAME" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="FromNameBox" Style="{StaticResource ModernTextBox}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="FROM EMAIL ADDRESS" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="FromAddressBox" Style="{StaticResource ModernTextBox}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,10,0,0">
+                                        <TextBlock Text="SEND ALERTS TO (SEPARATE WITH ; OR ,)" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="RecipientsBox" Style="{StaticResource ModernTextBox}" />
+                                    </StackPanel>
+
+                                    <WrapPanel Margin="0,14,0,0">
+                                        <Button Content="Save settings" Style="{StaticResource PrimaryButton}" Click="SaveSettings_Click" />
+                                        <Button x:Name="TestEmailButton" Content="Send test email" Style="{StaticResource SecondaryButton}"
+                                                Margin="8,0,0,0" Click="SendTestEmail_Click" />
+                                        <Button x:Name="UsageEmailButton" Content="Send usage now" Style="{StaticResource LinkButton}"
+                                                Margin="6,0,0,0" Click="SendUsageEmail_Click" />
+                                    </WrapPanel>
+
+                                    <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6"
+                                            Padding="10,8" Margin="0,12,0,0">
+                                        <TextBlock FontSize="11" Foreground="#92400E" TextWrapping="Wrap"
+                                                   Text="Your password is encrypted with Windows DPAPI for your user account and stored locally. Common servers: smtp.gmail.com:587 (STARTTLS), smtp-mail.outlook.com:587 (STARTTLS), smtp.mail.yahoo.com:465 (SSL/TLS)." />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Recent alerts" Style="{StaticResource H2}" DockPanel.Dock="Left" />
+                                        <Button Content="Clear" Style="{StaticResource LinkButton}" HorizontalAlignment="Right"
+                                                Click="ClearHistory_Click" />
+                                    </DockPanel>
+                                    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                        <ItemsControl x:Name="HistoryItems">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#F8FAFC" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                                                        <StackPanel>
+                                                            <DockPanel>
+                                                                <TextBlock Text="{Binding TimeText}" FontSize="11"
+                                                                           Foreground="{StaticResource MutedBrush}" />
+                                                                <Border CornerRadius="8" Padding="6,1" HorizontalAlignment="Right"
+                                                                        Background="{Binding StatusBackground}">
+                                                                    <TextBlock Text="{Binding StatusText}" FontSize="10"
+                                                                               FontWeight="SemiBold" Foreground="{Binding StatusForeground}" />
+                                                                </Border>
+                                                            </DockPanel>
+                                                            <TextBlock Text="{Binding Summary}" FontSize="12" TextWrapping="Wrap"
+                                                                       Margin="0,4,0,0" />
+                                                            <TextBlock Text="{Binding Error}" FontSize="11" Foreground="{StaticResource DangerBrush}"
+                                                                       TextWrapping="Wrap" Margin="0,3,0,0"
+                                                                       Visibility="{Binding ErrorVisibility}" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                    <TextBlock x:Name="HistoryEmptyText" Text="No alerts yet."
+                                               Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============================ DISK USAGE ============================ -->
+            <TabItem Header="Disk Usage">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource Card}" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Scan location" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"
+                                       Margin="2,0,0,0" />
+                            <ComboBox Grid.Column="1" x:Name="ScanPathBox" IsEditable="True" Margin="10,0,10,0"
+                                      VerticalContentAlignment="Center" />
+                            <Button Grid.Column="2" Content="Browse…" Style="{StaticResource SecondaryButton}"
+                                    Click="BrowseScanFolder_Click" />
+                            <Button Grid.Column="3" x:Name="ScanButton" Content="Scan" Style="{StaticResource PrimaryButton}"
+                                    Margin="8,0,0,0" Click="StartScan_Click" />
+                            <Button Grid.Column="4" x:Name="CancelScanButton" Content="Cancel" Style="{StaticResource SecondaryButton}"
+                                    Margin="8,0,0,0" IsEnabled="False" Click="CancelScan_Click" />
+                            <CheckBox Grid.Column="5" x:Name="IncludeHiddenCheck" Content="Include hidden / system"
+                                      Margin="14,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" x:Name="ScanProgressPanel" Visibility="Collapsed" Margin="2,10,2,0">
+                        <ProgressBar x:Name="ScanProgressBar" Height="6" IsIndeterminate="True"
+                                     Foreground="{StaticResource AccentBrush}" Background="#E2E8F0" BorderThickness="0" />
+                        <TextBlock x:Name="ScanProgressText" Style="{StaticResource Muted}" Margin="0,6,0,0"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="10,7" Margin="0,10,0,0">
+                        <DockPanel>
+                            <Button x:Name="UpButton" Content="↑ Up" Style="{StaticResource SecondaryButton}"
+                                    Padding="10,4" Click="Up_Click" IsEnabled="False" />
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                <TextBlock x:Name="FolderSummaryText" Style="{StaticResource Muted}" VerticalAlignment="Center"
+                                           Margin="0,0,12,0" />
+                                <Button Content="Open in Explorer" Style="{StaticResource LinkButton}"
+                                        Click="OpenCurrentFolder_Click" />
+                                <Button Content="Rescan" Style="{StaticResource LinkButton}" Click="Rescan_Click" />
+                            </StackPanel>
+                            <TextBlock x:Name="BreadcrumbText" VerticalAlignment="Center" Margin="10,0,8,0"
+                                       FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                        </DockPanel>
+                    </Border>
+
+                    <Grid Grid.Row="3" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="460" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource Card}" Padding="0" ClipToBounds="True">
+                            <controls:TreemapControl x:Name="Treemap" />
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0" ClipToBounds="True">
+                            <TabControl x:Name="DetailsTabs" Margin="8,4,8,8">
+                                <TabItem Header="Contents">
+                                    <DataGrid x:Name="ContentsGrid" Margin="0,4,0,0" MouseDoubleClick="ContentsGrid_MouseDoubleClick">
+                                        <DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Open in Explorer" Click="OpenSelectedInExplorer_Click" />
+                                                <MenuItem Header="Copy full path" Click="CopySelectedPath_Click" />
+                                                <Separator />
+                                                <MenuItem Header="Delete to Recycle Bin…" Click="DeleteSelected_Click" />
+                                            </ContextMenu>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn Header="Name" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Glyph}" FontSize="12" Margin="0,0,6,0"
+                                                                       Foreground="{Binding CategoryBrush}" />
+                                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+                                                                       ToolTip="{Binding FullPath}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTemplateColumn Header="Size" Width="88">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding SizeText}" TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTemplateColumn Header="%" Width="54">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding PercentText}" TextAlignment="Right"
+                                                                   Foreground="{StaticResource MutedBrush}" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </TabItem>
+
+                                <TabItem Header="Largest files">
+                                    <DataGrid x:Name="LargestFilesGrid" Margin="0,4,0,0" MouseDoubleClick="LargestFilesGrid_MouseDoubleClick">
+                                        <DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Open in Explorer" Click="OpenSelectedInExplorer_Click" />
+                                                <MenuItem Header="Copy full path" Click="CopySelectedPath_Click" />
+                                                <Separator />
+                                                <MenuItem Header="Delete to Recycle Bin…" Click="DeleteSelected_Click" />
+                                            </ContextMenu>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn Header="File" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="📄" FontSize="11" Margin="0,0,6,0" />
+                                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+                                                                       ToolTip="{Binding FullPath}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTemplateColumn Header="Size" Width="88">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding SizeText}" TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </TabItem>
+
+                                <TabItem Header="Largest folders">
+                                    <DataGrid x:Name="LargestFoldersGrid" Margin="0,4,0,0" MouseDoubleClick="LargestFoldersGrid_MouseDoubleClick">
+                                        <DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Open in Explorer" Click="OpenSelectedInExplorer_Click" />
+                                                <MenuItem Header="Copy full path" Click="CopySelectedPath_Click" />
+                                                <Separator />
+                                                <MenuItem Header="Delete to Recycle Bin…" Click="DeleteSelected_Click" />
+                                            </ContextMenu>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn Header="Folder" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="📁" FontSize="11" Margin="0,0,6,0" />
+                                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"
+                                                                       ToolTip="{Binding FullPath}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTemplateColumn Header="Size" Width="88">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding SizeText}" TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </TabItem>
+
+                                <TabItem Header="File types">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
+                                        <ItemsControl x:Name="TypesItems">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="2,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="14" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="80" />
+                                                            <ColumnDefinition Width="54" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Width="9" Height="9" CornerRadius="2"
+                                                                Background="{Binding CategoryBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding SizeText}" FontSize="12"
+                                                                   TextAlignment="Right" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="3" Text="{Binding PercentText}" FontSize="11"
+                                                                   TextAlignment="Right" Foreground="{StaticResource MutedBrush}"
+                                                                   VerticalAlignment="Center" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </TabItem>
+                            </TabControl>
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="4" Style="{StaticResource Card}" Padding="12,8" Margin="0,10,0,0">
+                        <DockPanel>
+                            <TextBlock x:Name="ScanStatusText" Style="{StaticResource Muted}" VerticalAlignment="Center"
+                                       Text="No scan yet. Choose a drive or folder and press Scan." />
+                            <TextBlock x:Name="ScanLegendText" DockPanel.Dock="Right" Style="{StaticResource Muted}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Status bar -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="22,7">
+            <DockPanel>
+                <TextBlock x:Name="StatusText" Text="Ready" Style="{StaticResource Muted}" />
+                <TextBlock Text="Drive Space Checker 1.0" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                           Style="{StaticResource Muted}" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>
